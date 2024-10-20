@@ -30,10 +30,6 @@ import torchvision.transforms as TS
 import base64
 from io import BytesIO
 
-# import openai
-# import nltk
-# from lavis.models import load_model_and_preprocess
-# from transformers import CLIPProcessor, CLIPModel
 from transformers import AutoModelForCausalLM, AutoTokenizer
 from transformers.generation import GenerationConfig
 import pycocotools.mask as mask_util
@@ -83,12 +79,6 @@ def forward_qwen(raw_image, category_name, bbox, qwen_model, qwen_tokenizer):
         os.makedirs('tmp', exist_ok=True)
         raw_image_cropped.save(tmp_image_name)
 
-        # raw_image_cropped = blip_vis_processors["eval"](raw_image_cropped).unsqueeze(0).to(device)
-        # generate caption using beam search
-        # captions = blip_model.generate({"image": raw_image_cropped})
-        # instance_caption = captions[0]
-        # instance_caption_all = captions[0]
-        # print('Instance caption: {}; category_name: {}'.format(captions, category_name))
         query = qwen_tokenizer.from_list_format([
             {
                 'image': tmp_image_name,
@@ -103,7 +93,6 @@ def forward_qwen(raw_image, category_name, bbox, qwen_model, qwen_tokenizer):
         instance_caption = response
         # remove the temporary image
         os.remove(tmp_image_name)
-        # print('Object size: {}; Instance caption: {}; category_name: {}'.format(area, instance_caption, category_name))
 
     else:
         instance_caption = category_name
@@ -213,10 +202,6 @@ def show_box(box, ax, label):
 
 # convert binary mask to RLE
 def mask_2_rle(binary_mask):
-    # binary_mask_encoded = mask_pycoco.encode(np.asfortranarray(binary_mask.astype(np.uint8)))
-    # area = mask_pycoco.area(binary_mask_encoded)
-    # if area < 16:
-    #     return None, None
     rle = mask_util.encode(np.array(binary_mask[...,None], order="F", dtype="uint8"))[0]
     rle['counts'] = rle['counts'].decode('ascii')
     return rle
